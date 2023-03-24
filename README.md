@@ -1,5 +1,5 @@
 # DeZeroCxx
 DeZero's C++ Implementation
 
-# Dependancy
+# Dependency
 - [NumCpp](https://github.com/dpilger26/NumCpp)
