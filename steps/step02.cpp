@@ -10,19 +10,21 @@ class Variable {
 
 class Function {
  public:
-  Variable operator()(Variable& input) {
+  Variable operator()(const Variable& input) {
     auto x = input.data_;
     auto y = this->forward(x);
     auto output = Variable(y);
     return output;
   }
 
-  virtual nc::NdArray<double> forward(nc::NdArray<double> x) = 0;
+  virtual nc::NdArray<double> forward(const nc::NdArray<double>& x) = 0;
 };
 
 class Square : public Function {
  public:
-  nc::NdArray<double> forward(nc::NdArray<double> x) override { return x * x; }
+  nc::NdArray<double> forward(const nc::NdArray<double>& x) override {
+    return x * x;
+  }
 };
 
 Variable::Variable(const nc::NdArray<double>& data) : data_(data) {}

@@ -37,15 +37,26 @@ class Exp : public Function {
 
 Variable::Variable(const nc::NdArray<double>& data) : data_(data) {}
 
-int main() {
-  nc::NdArray<double> data({0.5});
+Variable f(const Variable& x) {
   Square A;
   Exp B;
   Square C;
-  auto x = Variable(data);
-  auto a = A(x);
-  auto b = B(a);
-  auto y = C(b);
+  return C(B(A(x)));
+}
 
-  std::cout << y.data_ << std::endl;
+nc::NdArray<double> numerical_diff(std::function<Variable(Variable)> f,
+                                   const Variable& x, double eps = 1e-04) {
+  auto x0 = Variable(x.data_ - eps);
+  auto x1 = Variable(x.data_ + eps);
+  auto y0 = f(x0);
+  auto y1 = f(x1);
+  return (y1.data_ - y0.data_) / (2 * eps);
+}
+
+int main() {
+  nc::NdArray<double> data({0.5});
+  auto x = Variable(data);
+
+  auto dy = numerical_diff(f, x);
+  std::cout << dy << std::endl;
 }
