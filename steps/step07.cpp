@@ -1,31 +1,49 @@
+#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <memory>
 
 #include "NumCpp.hpp"
 
+class Function;
+
 class Variable {
  public:
   nc::NdArray<double> data;
   nc::NdArray<double> grad;
+  Function* creator_ptr = nullptr;
   explicit Variable(const nc::NdArray<double>& data);
+  void set_creator(Function* creator);
+  void backward();
 };
 
 class Function {
  public:
   Variable* input_ptr;
+  Variable* output_ptr;
   virtual ~Function() {}
   Variable operator()(Variable& input) {
     const auto& x = input.data;
     const auto& y = this->forward(x);
     auto output = Variable(y);
+    output.set_creator(this);
     input_ptr = &input;
+    output_ptr = &output;
     return output;
   }
 
   virtual nc::NdArray<double> forward(const nc::NdArray<double>& x) = 0;
   virtual nc::NdArray<double> backward(const nc::NdArray<double>& gy) = 0;
 };
+
+Variable::Variable(const nc::NdArray<double>& data) : data(data){};
+void Variable::set_creator(Function* creator) { creator_ptr = creator; }
+void Variable::backward() {
+  if (creator_ptr != nullptr) {
+    creator_ptr->input_ptr->grad = creator_ptr->backward(grad);
+    creator_ptr->input_ptr->backward();
+  }
+}
 
 class Square : public Function {
  public:
@@ -51,8 +69,6 @@ class Exp : public Function {
   }
 };
 
-Variable::Variable(const nc::NdArray<double>& data) : data(data) {}
-
 int main() {
   auto A = Square();
   auto B = Exp();
@@ -64,10 +80,11 @@ int main() {
   auto b = B(a);
   auto y = C(b);
 
+  assert(y.creator_ptr == &C);
+  assert(y.creator_ptr->input_ptr == &b);
+
   nc::NdArray<double> loss({1.0});
   y.grad = loss;
-  b.grad = C.backward(y.grad);
-  a.grad = B.backward(b.grad);
-  x.grad = A.backward(a.grad);
+  y.backward();
   std::cout << x.grad << std::endl;
 }
