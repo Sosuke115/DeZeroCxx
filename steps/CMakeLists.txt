@@ -5,11 +5,17 @@ project(step)
 set(CMAKE_CXX_STANDARD 17)
 
 include_directories(/usr/local/include)
-include_directories(/opt/homebrew/Cellar/boost/1.81.0_1/include)
 
+add_custom_target(valgrind
+    COMMAND valgrind --tool=memcheck --leak-check=yes ./step08
+    COMMENT "Running valgrind"
+)
+
+# add_executable(test test.cpp)
 add_executable(step01 step01.cpp)
 add_executable(step02 step02.cpp)
 add_executable(step03 step03.cpp)
 add_executable(step04 step04.cpp)
 add_executable(step06 step06.cpp)
 add_executable(step07 step07.cpp)
+add_executable(step08 step08.cpp)
