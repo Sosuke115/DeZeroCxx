@@ -47,6 +47,14 @@ RUN cd /home && git clone https://github.com/dpilger26/NumCpp.git && \
     cmake -DNUMCPP_NO_USE_BOOST=ON .. && \
     cmake --build . --target install
 
+# gtest
+RUN cd /home && git clone https://github.com/google/googletest.git && \
+    cd googletest && mkdir build && cd build && \
+    cmake .. && make && \ 
+    cp -r /home/googletest/googlemock/include/gmock /usr/local/include/gmock \ 
+    cp -r /home/googletest/googletest/include/gtest /usr/local/include/gtest \
+    cp /home/googletest/build/lib/*.a /usr/local/lib/
+
 RUN yum clean all
 
 # Build directory
